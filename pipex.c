@@ -6,7 +6,7 @@
 /*   By: mradouan <mradouan@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/07 14:52:31 by mradouan          #+#    #+#             */
-/*   Updated: 2025/04/08 15:45:38 by mradouan         ###   ########.fr       */
+/*   Updated: 2025/04/08 16:32:57 by mradouan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 int opening_files(char *in_f, char *out_f, int *infile, int *outfle)
 {
 	*infile = open(in_f, O_RDONLY);
-	if (!*infile)
+	if (!*infile || access(in_f, F_OK) == -1)
 	   return (0);
 	*outfle = open(out_f, O_CREAT | O_WRONLY | O_TRUNC, 0644);
 	if (!*outfle)
@@ -45,8 +45,8 @@ int create_connection(int *infile, int *outfile, char **cmd1, char **cmd2, char 
 		cmd_path = is_accessable(paths, cmd1);
 		if (!cmd_path)
 		{
-			printf("Command Not Found\n");
-			exit(1);	
+			write(2, "mhd: command not found\n", 24);
+			exit(1);
 		}
 		execve(cmd_path, cmd1, envp);
 		perror("execeve (cmd1)");
@@ -65,7 +65,7 @@ int create_connection(int *infile, int *outfile, char **cmd1, char **cmd2, char 
 		cmd_path = is_accessable(paths, cmd2);
 		if (!cmd_path)
 		{
-			printf("Command Not Found\n");
+			write(2, "mhd: command not found\n", 24);
 			exit(1);	
 		}
 		execve(cmd_path, cmd2, envp);
@@ -138,6 +138,5 @@ int main(int argc, char **argv, char **envp)
 		return (printf("Error of opening files\n"), 1);
 	if (create_connection(&infile, &outfile, cmd1, cmd2, paths, envp) == -1)
 		return (printf("Error Forking or Piping\n"));
-	
 	return (0);
 }
